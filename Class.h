@@ -59,7 +59,7 @@ public:
 
     Matrix& operator+=(const Matrix& temp) {
         if(temp.col != this->col or temp.row != this->row) {
-            throw std::invalid_argument("Matrixes sizes are not equal");
+            throw std::logic_error("Matrixes sizes are not equal");
         }
         for(int i=0; i<row; i++) {
             for(int j=0; j<col; j++) {
@@ -72,7 +72,7 @@ public:
 
     Matrix& operator-=(const Matrix& temp) {
         if(temp.col != this->col or temp.row != this->row) {
-            throw std::invalid_argument("Matrixes sizes are not equal");
+            throw std::logic_error("Matrixes sizes are not equal");
         }
         for(int i=0; i<row; i++) {
             for(int j=0; j<col; j++) {
@@ -85,7 +85,7 @@ public:
 
     Matrix& operator*=(const Matrix& temp) {
         if(this->col != temp.row) {
-            throw std::invalid_argument("Matrixes sizes are not equal");
+            throw std::logic_error("Matrixes sizes are not equal");
         }
         Matrix result(this->row, temp.col);
         for (int i = 0; i < this->row; ++i) {
@@ -102,7 +102,7 @@ public:
 
     friend Matrix operator+(const Matrix& m1,const Matrix& m2) {
         if(m1.col != m2.col or m1.row != m2.row) {
-            throw std::invalid_argument("Matrixes sizes are not equal");
+            throw std::logic_error("Matrixes sizes are not equal");
         }
         Matrix result = m1;
         result += m2;
@@ -111,7 +111,7 @@ public:
 
     friend Matrix operator-(const Matrix& m1, const Matrix& m2) {
         if(m1.col != m2.col or m1.row != m2.row) {
-            throw std::invalid_argument("Matrixes sizes are not equal");
+            throw std::logic_error("Matrixes sizes are not equal");
         }
         Matrix result = m1;
         result -= m2;
@@ -120,7 +120,7 @@ public:
 
     friend Matrix operator*(const Matrix& m1, const Matrix& m2) {
         if(m1.col != m2.row) {
-            throw std::invalid_argument("Matrixes sizes are not equal");
+            throw std::logic_error("Matrixes sizes are not equal");
         }
         Matrix result = m1;
         result *= m2;
@@ -163,7 +163,49 @@ public:
         this->matrix = move(result.matrix);
     }
 
-    double Determinant() {
-        return 0;
+    MatrixType Determinant() const {
+        if (row != col) {
+            throw std::logic_error("Matrix isn't square");
+        }
+
+        Matrix<MatrixType> temp = *this;
+        MatrixType det = 1;
+        int n = row;
+        int swapCount = 0;
+
+        for (int i = 0; i < n; ++i) {
+            int pivot = i;
+            for (int j = i + 1; j < n; ++j) {
+                if (std::abs(temp[j][i]) > std::abs(temp[pivot][i])) {
+                    pivot = j;
+                }
+            }
+
+            if (temp[pivot][i] == 0) {
+                return 0;
+            }
+
+            if (i != pivot) {
+                std::swap(temp[i], temp[pivot]);
+                swapCount++;
+            }
+
+            for (int j = i + 1; j < n; ++j) {
+                MatrixType factor = temp[j][i] / temp[i][i];
+                for (int k = i; k < n; ++k) {
+                    temp[j][k] -= factor * temp[i][k];
+                }
+            }
+        }
+    
+        for (int i = 0; i < n; ++i) {
+            det *= temp[i][i];
+        }
+
+        if (swapCount % 2 != 0) {
+            det = -det;
+        }
+
+        return det;
     }
 };
