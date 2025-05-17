@@ -163,14 +163,18 @@ public:
         this->matrix = move(result.matrix);
     }
 
-    MatrixType Determinant() const {
-        if (row != col) {
+    double Determinant() const {
+        if (row != col)
             throw std::logic_error("Matrix isn't square");
-        }
 
-        Matrix<MatrixType> temp = *this;
-        MatrixType det = 1;
         int n = row;
+        Matrix<double> temp(row, col);
+
+        for (int i = 0; i < row; ++i)
+            for (int j = 0; j < col; ++j)
+                temp[i][j] = static_cast<double>(matrix[i][j]);
+
+        double det = 1.0;
         int swapCount = 0;
 
         for (int i = 0; i < n; ++i) {
@@ -181,8 +185,8 @@ public:
                 }
             }
 
-            if (temp[pivot][i] == 0) {
-                return 0;
+            if (std::abs(temp[pivot][i]) < 1e-9) {
+                return 0.0;
             }
 
             if (i != pivot) {
@@ -191,20 +195,18 @@ public:
             }
 
             for (int j = i + 1; j < n; ++j) {
-                MatrixType factor = temp[j][i] / temp[i][i];
+                double factor = temp[j][i] / temp[i][i];
                 for (int k = i; k < n; ++k) {
                     temp[j][k] -= factor * temp[i][k];
                 }
             }
         }
-    
-        for (int i = 0; i < n; ++i) {
-            det *= temp[i][i];
-        }
 
-        if (swapCount % 2 != 0) {
+        for (int i = 0; i < n; ++i)
+            det *= temp[i][i];
+
+        if (swapCount % 2 != 0)
             det = -det;
-        }
 
         return det;
     }
